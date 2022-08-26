@@ -80,7 +80,7 @@ public final class TOMLayer extends Thread implements RequestReceiver {
 
     //thread pool used to paralelise verification of requests contained in a batch
     private ExecutorService verifierExecutor = null;
-    private long[] proposeTimestamp = new long[20000];
+    private int reqNumInPropose[] = new int[20000];
     /**
      * Manage timers for pending requests
      */
@@ -642,13 +642,13 @@ public final class TOMLayer extends Thread implements RequestReceiver {
         // System.out.println("success get a HashPropose");
         TOMMessage[] requests = null;
         requests = batchReader.deserialiseRequests(this.controller);
-        
+        reqNumInPropose[msg.getNumber()] = requests.length;
        for (int i=0;i<requests.length;i++)
         {
-            proposeTimestamp[requests[i].getSequence()] = System.currentTimeMillis();
+            
 //            System.out.println(requests[i].getSequence()+" "+requests[i].getSender()+" "+clientsManager.getClientData(requests[i].getSender()).getLastMessageReceived());
            if (requests[i].getSequence()>clientsManager.getClientData(requests[i].getSender()).getLastMessageReceived()){
-                  System.out.println("failnum : " + (++failnum));
+                  System.out.println("failnum : " + (++failnum) + ", id : " + requests[i].getSequence() + " lastReceivedTime: " + clientsManager.getClientData(requests[i].getSender()).getLastMessageReceivedTime());
 //                return;
            }
         }
@@ -664,11 +664,20 @@ public final class TOMLayer extends Thread implements RequestReceiver {
             BufferedWriter writeText = new BufferedWriter(new FileWriter(writeFile));
             writeText.write("propose,request_"+id+"\n");
             writeText.flush();
-            for(int i=0; i<totaltxs; i++){
-                writeText.write(proposeTimestamp[i] 
-                + "," + this.clientsManager.clientRequestTimestamp[i]
+            int totalReqCnt = 0;
+            for(int i = 0; i < reqNumInPropose.length; i++){
+                for(int j = 0; j < reqNumInPropose[i]; j++){
+                    writeText.write(this.acceptor.proposeTimestamp[i] 
+                + "," + this.clientsManager.clientRequestTimestamp[totalReqCnt++]
                 + "\n");
+                }
             }
+
+            // for(int i=0; i<totaltxs; i++){
+            //     writeText.write(proposeTimestamp[i] 
+            //     + "," + this.clientsManager.clientRequestTimestamp[i]
+            //     + "\n");
+            // }
             writeText.flush();
             writeText.close();
         }catch (Exception e){

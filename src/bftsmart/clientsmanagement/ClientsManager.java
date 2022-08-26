@@ -226,7 +226,7 @@ public class ClientsManager {
         
         int clientId = request.getSender();
 
-        clientRequestTimestamp[request.getSequence()] = System.currentTimeMillis();
+        
         boolean accounted = false;
 
         ClientData clientData = getClientData(clientId);
@@ -291,7 +291,7 @@ public class ClientsManager {
 
                 //I don't have the message but it is valid, I will
                 //insert it in the pending requests of this client
-                
+                clientRequestTimestamp[request.getSequence()] = receptionTime;
                 request.recvFromClient = fromClient;
                 //System.out.println(request.deliveryTime" "+request.receptionTime);
                 clientData.getPendingRequests().add(request); 

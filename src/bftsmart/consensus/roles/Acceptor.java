@@ -61,6 +61,7 @@ public final class Acceptor {
     private ServerCommunicationSystem communication; // Replicas comunication system
     private TOMLayer tomLayer; // TOM layer
     private ServerViewController controller;
+    public long[] proposeTimestamp = new long[20000];
     //private Cipher cipher;
     private Mac mac;
     private long lastTimeReceivePropose = 0;
@@ -136,6 +137,7 @@ public final class Acceptor {
         Epoch epoch = consensus.getEpoch(msg.getEpoch(), controller);       
         switch (msg.getType()){
             case MessageFactory.PROPOSE:{
+                    proposeTimestamp[msg.getNumber()] = System.currentTimeMillis();
                     proposeReceived(epoch, msg);
             }break;
             case MessageFactory.WRITE:{
